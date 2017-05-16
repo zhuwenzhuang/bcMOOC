@@ -10,7 +10,7 @@ import java.util.TreeMap;
 public class BlockChain {
 	public static final int CUT_OFF_AGE = 10;
 
-	public static final int MAX_BLOCK = 100000;// 
+	public static final int MAX_BLOCK = 100000;//
 	private TransactionPool myTxnPool;
 	private int blockNum;
 	private int maxHeight;
@@ -45,23 +45,23 @@ public class BlockChain {
 		heightBlockList.add(bw);
 		heightBlockMap.put(bw.height, heightBlockList);
 		hashBlockMap.put(new ByteArrayWrapper(bw.block.getHash()), bw);
-		blockNum ++;
+		blockNum++;
 
 	}
 
 	private boolean addBlockWrapper(Block block, int height, UTXOPool pool) {
 		block.finalize();
 		BlockWrapper bw = new BlockWrapper(block, height, pool);
-		if(!heightBlockMap.containsKey(height)){
+		if (!heightBlockMap.containsKey(height)) {
 			LinkedList<BlockWrapper> heightBlockList = new LinkedList<>();
 			heightBlockList.add(bw);
 			heightBlockMap.put(bw.height, heightBlockList);
-		}else{
+		} else {
 			heightBlockMap.get(height).add(bw);
 		}
-		
+
 		hashBlockMap.put(new ByteArrayWrapper(bw.block.getHash()), bw);
-		blockNum ++;
+		blockNum++;
 		return true;
 	}
 
@@ -95,13 +95,14 @@ public class BlockChain {
 	 */
 	public boolean addBlock(Block block) {
 
-		if (block.getPrevBlockHash() == null || !hashBlockMap.containsKey(new ByteArrayWrapper(block.getPrevBlockHash()))) {
+		if (block.getPrevBlockHash() == null
+				|| !hashBlockMap.containsKey(new ByteArrayWrapper(block.getPrevBlockHash()))) {
 			return false;
 		}
 
 		BlockWrapper pbw = hashBlockMap.get(new ByteArrayWrapper(block.getPrevBlockHash()));
 		int height = pbw.height + 1;
-		int lastHeight = maxHeight + CUT_OFF_AGE;
+		int lastHeight = maxHeight - CUT_OFF_AGE;
 		if (height <= lastHeight) {
 			return false;
 		}
@@ -125,14 +126,14 @@ public class BlockChain {
 			}
 		}
 
-		if(!addBlockWrapper(block, height, pool)){
+		if (!addBlockWrapper(block, height, pool)) {
 			return false;
 		}
-		
-		while (heightBlockMap.firstKey() < lastHeight || blockNum > MAX_BLOCK) {
+
+		while (heightBlockMap.firstKey() < lastHeight-1 || blockNum > MAX_BLOCK) {
 			for (BlockWrapper bw : heightBlockMap.firstEntry().getValue()) {
 				hashBlockMap.remove(bw);
-				blockNum --;
+				blockNum--;
 			}
 			heightBlockMap.remove(heightBlockMap.firstKey());
 		}
@@ -141,7 +142,7 @@ public class BlockChain {
 
 	/** Add a transaction to the transaction pool */
 	public void addTransaction(Transaction tx) {
-		if (tx != null)// 
+		if (tx != null)//
 			myTxnPool.addTransaction(tx);
 	}
 
